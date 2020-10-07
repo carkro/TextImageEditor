@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>文章发布</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+    <link rel="stylesheet" href="https://apps.bdimg.com/libs/jqueryui/1.10.4/css/jquery-ui.min.css">
+    <script src="https://apps.bdimg.com/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="https://apps.bdimg.com/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" >
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" ></script>
+
+    <style type="text/css">
+        .form-group {
+            margin-bottom: 0;
+        }
+        .form-control{
+            border: 1px solid #e1e1e8;
+        }
+
+        .input-top{
+            border-radius: 0;
+            border-top-left-radius: 4px;
+            border-bottom-width: 0;
+            resize:none;
+        }
+        .input-middle{
+            border-radius: 0;
+            border-top-width: 0px;
+            border-bottom-width: 0px;
+            resize:none;
+        }
+        .input-bottom {
+            padding: 9px 14px;
+            margin-bottom: 14px;
+            background-color: #f7f7f9;
+            border: 1px solid #e1e1e8;
+            border-top-width: 1px;
+            border-right-width: 1px;
+            border-bottom-width: 1px;
+            border-left-width: 1px;
+            border-bottom-right-radius: 4px;
+            border-bottom-left-radius: 4px;
+        }
+        .uploade-image{
+            border: 1px solid #e1e1e8;
+            border-top-left-radius: 4px;
+            border-bottom-width: 0;
+            top: 14px;
+            width: 100%;
+        }
+
+        .button-group-div{
+            height: 34px;
+            line-height: 34px;
+        }
+        .btn-hide{
+            display: none;
+        }
+        .form-group-num{
+            float: right;
+            width: 38px;
+            height: 16px;
+            line-height: 16px;
+            font-size: 12px;
+            color: #fff;
+            text-align: center;
+            background: #5292ea;
+            border-top-right-radius: 4px;
+            border-top-left-radius: 4px;
+        }
+        .url-input{
+            border-style:none;
+            border:0;
+            background-color: transparent;
+            width: 50%;
+        }
+        .glyphicon-right{
+            float: right;
+            top:4px;
+            margin-left: 10px;
+        }
+        .btn-div{
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div style="height: 20px"> </div>
+        <form id="postForm" enctype="multipart/form-data" action="" method="post">
+            <input id="files" name="files" type="file" accept="image/*" style="display: none" value="" multiple />
+            <div class="form-group">
+                <input type="text" name="title" class="form-control" placeholder="请输入文章标题">
+                <div style="height: 15px"> </div>
+                <div class="button-group-div">
+                    <button onclick="addText(this)" class="btn btn-default" type="button">文本</button>
+                    <button onclick="addImage(this)" class="btn btn-default" type="button">图片</button>
+                </div>
+            </div>
+        </form>
+        <div class="btn-div">
+            <button class="btn btn-primary btn-lg btn-block" onclick="submitForm()" type="button">提交</button>
+        </div>
+    </div>
+
+    <!-- 超链接弹出框 -->
+    <div class="modal fade" id="urlModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">请输入URL地址</h4>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <input id="urlInput" type="text" class="form-control">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="addUrl()">保存</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+<script type="text/html" id="imageTemplate">
+    <div class="form-group">
+        <span class="form-group-num"></span>
+        <img class="uploade-image">
+        <input data-type="image-base64" type="hidden" value="">
+        <input data-type="image-name" type="hidden" value="">
+        <input data-type="image-type" type="hidden" value="">
+        <textarea class="form-control input-middle" data-type="image-describe" rows="2" placeholder="图片描述"></textarea>
+        <div class="input-bottom">
+            <a tabindex="0" role="button" data-toggle="popover">😊</a>
+            <a class="glyphicon glyphicon-link" onclick="showUrlModal(this)"></a>
+            <input data-type="url" class="url-input" type="text" readonly>
+            <i class="glyphicon glyphicon-sort glyphicon-right"></i>
+            <a class="glyphicon glyphicon-trash glyphicon-right" onclick="deleteGroup(this)"></a>
+        </div>
+        <div class="button-group-div">
+            <i class="glyphicon glyphicon-plus"></i>
+            <button onclick="addText(this)" class="btn btn-default btn-hide" type="button">文本</button>
+            <button onclick="addImage(this)" class="btn btn-default btn-hide" type="button">图片</button>
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="textTemplate">
+    <div class="form-group">
+        <span class="form-group-num"></span>
+        <textarea class="form-control input-top" data-type="content" rows="4" placeholder="请输正文内容，字数限制1000字"></textarea>
+        <div class="input-bottom">
+            <a tabindex="0" role="button" data-toggle="popover">😊</a>
+            <a class="glyphicon glyphicon-link" onclick="showUrlModal(this)"></a>
+            <input data-type="url" class="url-input" type="text" readonly>
+            <i class="glyphicon glyphicon-sort glyphicon-right"></i>
+            <a class="glyphicon glyphicon-trash glyphicon-right" onclick="deleteGroup(this)"></a>
+        </div>
+        <div class="button-group-div">
+            <i class="glyphicon glyphicon-plus"></i>
+            <button onclick="addText(this)" class="btn btn-default btn-hide" type="button">文本</button>
+            <button onclick="addImage(this)" class="btn btn-default btn-hide" type="button">图片</button>
+        </div>
+    </div>
+</script>
+
+<script type="text/html" id="faceTemplate">
+    <div>
+        <span class="emoji">😁</span>
+        <span class="emoji">😂</span>
+        <span class="emoji">😃</span>
+        <span class="emoji">😄</span>
+        <span class="emoji">😅</span>
+        <span class="emoji">😆</span>
+        <span class="emoji">😉</span>
+        <span class="emoji">😊</span>
+        <span class="emoji">😋</span>
+        <span class="emoji">😌</span>
+        <span class="emoji">😍</span>
+        <span class="emoji">😏</span>
+        <span class="emoji">😒</span>
+        <span class="emoji">😓</span>
+        <span class="emoji">😔</span>
+        <span class="emoji">😖</span>
+        <span class="emoji">😘</span>
+        <span class="emoji">😚</span>
+        <span class="emoji">😜</span>
+        <span class="emoji">😝</span>
+        <span class="emoji">😞</span>
+        <span class="emoji">😠</span>
+        <span class="emoji">😡</span>
+        <span class="emoji">😢</span>
+        <span class="emoji">😣</span>
+        <span class="emoji">😤</span>
+        <span class="emoji">😥</span>
+        <span class="emoji">😨</span>
+        <span class="emoji">😩</span>
+        <span class="emoji">😪</span>
+        <span class="emoji">😫</span>
+        <span class="emoji">😭</span>
+        <span class="emoji">😰</span>
+        <span class="emoji">😱</span>
+        <span class="emoji">😲</span>
+        <span class="emoji">😳</span>
+        <span class="emoji">😵</span>
+        <span class="emoji">😷</span>
+        <span class="emoji">😸</span>
+        <span class="emoji">😹</span>
+        <span class="emoji">😺</span>
+        <span class="emoji">😻</span>
+        <span class="emoji">😼</span>
+        <span class="emoji">😽</span>
+        <span class="emoji">😾</span>
+        <span class="emoji">😿</span>
+        <span class="emoji">🙀</span>
+        <span class="emoji">🙅</span>
+        <span class="emoji">🙆</span>
+        <span class="emoji">🙇</span>
+        <span class="emoji">🙈</span>
+        <span class="emoji">🙉</span>
+        <span class="emoji">🙊</span>
+        <span class="emoji">🙋</span>
+        <span class="emoji">🙌</span>
+        <span class="emoji">🙍</span>
+        <span class="emoji">🙎</span>
+        <span class="emoji">🙏</span>
+    </div>
+</script>
+
+<script type="text/javascript">
+
+    var textTemplate = $("#textTemplate").html();
+    var imageTemplate = $("#imageTemplate").html();
+    var faceTemplate = $("#faceTemplate").html();
+
+    $(function () {
+        // 支持拖拽
+        $("#postForm").sortable({
+            items: ".form-group:gt(0)",
+            axis: "y",
+            update: reOrderNum
+        });
+
+        filesChangeListenInit();
+        // 添加第一个文本输入框
+        addText($(".form-group").find("button")[0]);
+
+        // TODO 和jquery的sortable冲突，加入整个页面点击监听
+        $('body').on('hidden.bs.popover', function (e) {
+            $(e.target).data("bs.popover").inState.click = false;
+        });
+        $(document).click(function () {
+            $("a[data-toggle='popover']").each(function () {
+                $(this).popover('hide');
+            });
+        });
+    });
+
+    // 初始化新增的块
+    function initFormGroup(obj) {
+        // 按钮左边的加减号初始化
+        insertButtonInit(obj);
+
+        // 表情初始化
+        facePopoverInit(obj);
+
+        // 重新计算排序
+        reOrderNum();
+    };
+
+    // 按钮左边的加减号初始化
+    function insertButtonInit(obj) {
+        $(obj).find(".glyphicon").click(function () {
+            var classVal = $(this).attr('class');
+            switch (classVal){
+                case "glyphicon glyphicon-plus":
+                    $(this).attr('class','glyphicon glyphicon-minus');
+                    $(this).nextAll().show();
+                    break;
+                case "glyphicon glyphicon-minus":
+                    $(this).attr('class','glyphicon glyphicon-plus');
+                    $(this).nextAll().hide();
+                    break;
+            };
+        });
+    };
+
+    // 表情弹出Pop初始化
+    function facePopoverInit(obj) {
+        var popoverObj = $(obj).find("a[data-toggle='popover']");
+        popoverObj.popover({
+            html: true,
+            /*trigger: "focus",*/  // TODO 和jquery的sortable冲突
+            content: faceTemplate,
+        });
+        popoverObj.on('shown.bs.popover', function () {
+            $(".emoji").click(function () {
+                var selectEmoji = $(this).html();
+                var selecttextarea = $(this).closest(".input-bottom").prev();
+                selecttextarea.val(selecttextarea.val() + selectEmoji);
+                popoverObj.click();
+            });
+        });
+        // TODO 和jquery的sortable冲突，加入不监听当前对象
+        popoverObj.click(function () {
+            event.stopPropagation();
+        });
+    };
+
+    // 文件选择监听初始化
+    var clickedImageButtonObj = null;
+    function filesChangeListenInit() {
+        $("#files").on("change", function(e){
+            var src;
+            var url = window.URL || window.webkitURL || window.mozURL;
+            var files = e.target.files;
+
+            //console.log(files);
+            for (var i = 0; i < files.length; ++i) {
+                var file = files[i];
+
+                if (url) {
+                    src = url.createObjectURL(file);
+                } else {
+                    src = e.target.result;
+                };
+
+                $(clickedImageButtonObj).closest(".form-group").after(imageTemplate);
+                var newObj = $(clickedImageButtonObj).closest(".form-group").next();
+
+                // 将图片插入模板中
+                newObj.find(".uploade-image").attr("src", src);
+
+                initFormGroup(newObj);
+
+                // 将图片转Base64，并填充到指定的对象里面
+                convertImageToBase64(file, newObj);
+
+            };
+        });
+
+    };
+
+    // 对右上角的角标和内部form的name值进行重新排列
+    function reOrderNum() {
+        $("#postForm .form-group").each(function (index) {
+            if (index == 0){
+                return true;
+            };
+            // 对当前对象里的输入参数赋name值
+            $(this).find(".form-group-num").html(index);
+            $(this).find("textarea[data-type='image-describe']").attr("name", index + "_image_describe");
+            $(this).find("textarea[data-type='content']").attr("name", index + "_content");
+            $(this).find("input[data-type='url']").attr("name", index + "_url");
+
+            // 为图片对象追加文件名和类型
+            $(this).find("input[data-type='image-base64']").attr("name", index + "_image_base64");
+            $(this).find("input[data-type='image-name']").attr("name", index + "_image_name");
+            $(this).find("input[data-type='image-type']").attr("name", index + "_image_type");
+        });
+    };
+
+    // 打开网址输入框
+    var selectUrlObj = null;
+    function showUrlModal(obj) {
+        selectUrlObj = obj;
+        var url = $(obj).next().val();
+        $("#urlInput").val(url ? url : "");
+        $('#urlModal').modal('show');
+    };
+    
+    // 关闭时记录下url
+    function addUrl() {
+        var url = $("#urlInput").val();
+        if (url && selectUrlObj){
+            $(selectUrlObj).next().val(url);
+        };
+        $('#urlModal').modal('hide');
+    };
+
+    // 添加一个新的块
+    function addText(obj) {
+        $(obj).closest(".form-group").after(textTemplate);
+        var newObj = $(obj).closest(".form-group").next();
+        initFormGroup(newObj);
+    };
+
+    // 上传图片
+    function addImage(obj) {
+        clickedImageButtonObj = obj;
+        $("#files").click();
+    };
+
+    // 删除当前对象
+    function deleteGroup(obj) {
+        $(obj).closest(".form-group").remove();
+        reOrderNum();
+    };
+
+    // 提交表单
+    function submitForm() {
+        $("#postForm").submit();
+    };
+
+    /**
+     * 将file类型的图片压缩并转base64字符串
+     * @param file
+     * @param newObj
+     */
+    function convertImageToBase64(file, newObj) {
+        //新建获取file的读取文件
+        var reader = new FileReader();
+        reader.readAsDataURL(file);
+
+        reader.onload = function() { //字面理解是加载图片，得到结果吧，不是很理解
+            imgsrc = this.result; //输出结果
+            // 压缩
+            var image = new Image(); //新建图片
+            image.src = imgsrc;
+            image.onload = function() {
+                var that = this;
+                //生成比例
+                var w = that.width,
+                    h = that.height,
+                    scale = w / h;
+                w = 480 || w; //480  你想压缩到多大，改这里
+                h = w / scale;
+
+                //生成canvas
+                var canvas = document.createElement('canvas');
+                var ctx = canvas.getContext('2d');
+                $(canvas).attr({
+                    width: w,
+                    height: h
+                });
+                ctx.drawImage(that, 0, 0, w, h);
+                var upsrc = canvas.toDataURL('image/jpeg', 1 || 0.8);
+
+                // 将base64填充到指定的对象value里面
+                newObj.find("input[data-type='image-base64']").val(upsrc);
+                newObj.find("input[data-type='image-name']").val(file.name);
+                newObj.find("input[data-type='image-type']").val(file.type);
+
+                console.log(upsrc);
+            };
+        };
+    };
+
+</script>
+
+</html>
